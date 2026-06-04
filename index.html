@@ -3,557 +3,536 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>运动记录解析工具</title>
+<title>本地图片浏览器</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;font-size:13px;color:#1a1a1a;background:#f5f5f3;min-height:100vh;padding:24px}
-h1{font-size:17px;font-weight:500;margin-bottom:20px;color:#1a1a1a}
-h2{font-size:14px;font-weight:500;margin-bottom:12px}
-h3{font-size:13px;font-weight:500;margin-bottom:8px}
-.card{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;padding:16px 20px;margin-bottom:16px}
-.row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
-.col{flex:1;min-width:260px}
-label{display:block;font-size:12px;color:#666;margin-bottom:4px;margin-top:10px}
-label:first-child{margin-top:0}
-.upload-zone{border:1px dashed rgba(0,0,0,0.2);border-radius:8px;padding:18px 16px;text-align:center;cursor:pointer;transition:background 0.15s;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.upload-zone:hover{background:#f9f9f7}
-.upload-zone.has-file{border-style:solid;border-color:rgba(0,0,0,0.3);background:#f9f9f7}
-.fn{font-weight:500;font-size:13px}
-.hint{font-size:11px;color:#999}
-.upload-icon{font-size:20px;margin-bottom:2px}
-input[type=file]{display:none}
-button{cursor:pointer;padding:7px 18px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.2);background:transparent;font-size:13px;font-family:inherit;transition:background 0.1s}
-button:hover{background:#f5f5f3}
-button.primary{background:#E24B4A;color:#fff;border-color:#E24B4A;font-weight:500;padding:8px 20px}
-button.primary:hover{background:#c43a3a}
-button.primary:disabled{background:#ccc;border-color:#ccc;cursor:not-allowed}
-.status{font-size:12px;color:#666;min-height:18px}
-.status.err{color:#A32D2D}
-.status.ok{color:#3B6D11}
-.divider{height:0.5px;background:rgba(0,0,0,0.1);margin:14px 0}
-.tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:10px}
-.tag-card{background:#f9f9f7;border-radius:8px;padding:10px 12px;cursor:default;border:0.5px solid transparent;transition:border-color 0.15s,background 0.15s}
-.tag-card.clickable{cursor:pointer}
-.tag-card.clickable:hover{background:#FCEBEB;border-color:#E24B4A}
-.tag-card.selected{background:#FCEBEB;border-color:#E24B4A}
-.tname{font-size:12px;font-weight:500}
-.tcount{font-size:22px;font-weight:500;color:#E24B4A;margin-top:2px}
-.metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin:10px 0}
-.metric{background:#f9f9f7;border-radius:8px;padding:10px}
-.ml{font-size:11px;color:#666}
-.mv{font-size:18px;font-weight:500;margin-top:2px}
-.chart-wrap{position:relative;width:100%;height:320px;margin-top:10px}
-.legend{display:flex;gap:12px;margin-bottom:6px;font-size:12px;color:#666;align-items:center}
-.legend i{width:20px;height:2px;background:#E24B4A;display:inline-block;border-radius:2px;margin-right:4px}
-.prog{display:none;height:3px;background:#f0f0f0;border-radius:2px;margin-top:8px;overflow:hidden}
-.prog-bar{height:100%;background:#E24B4A;border-radius:2px;transition:width 0.2s;width:0%}
-.zone-bar{display:flex;border-radius:6px;overflow:hidden;height:10px;margin-top:6px}
-.zone-bar span{height:100%;transition:width 0.3s}
-.zone-labels{display:flex;justify-content:space-between;font-size:10px;color:#999;margin-top:3px}
-.log{font-size:11px;color:#999;margin-top:6px;font-family:monospace;max-height:60px;overflow-y:auto;background:#f9f9f7;border-radius:4px;padding:4px 8px}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #1a1a18; color: #e0e0dc; min-height: 100vh; }
+  .toolbar { position: sticky; top: 0; z-index: 100; background: #252523; border-bottom: 0.5px solid #3a3a36; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .toolbar h1 { font-size: 15px; font-weight: 500; color: #e0e0dc; flex-shrink: 0; }
+  .btn-select { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #e0e0dc; color: #1a1a18; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-select:hover { background: #fff; }
+  .stats { font-size: 12px; color: #888; margin-left: auto; flex-shrink: 0; }
+  .filter-summary { font-size: 11px; color: #999; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+  .filter-summary span { white-space: nowrap; }
+  .search-wrap { position: relative; }
+  .search-wrap input { padding: 6px 12px 6px 30px; border: 0.5px solid #3a3a36; border-radius: 8px; font-size: 13px; font-family: inherit; width: 200px; background: #1e1e1c; color: #e0e0dc; outline: none; }
+  .search-wrap input:focus { border-color: #666; background: #2a2a26; }
+  .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 13px; pointer-events: none; }
+  .filter-bar { padding: 6px 20px; background: #252523; border-bottom: 0.5px solid #3a3a36; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .filter-bar span { font-size: 12px; color: #888; margin-right: 4px; }
+  .filter-bar .sep { width: 1px; height: 18px; background: #3a3a36; margin: 0 6px; }
+  .chip { padding: 4px 10px; border-radius: 20px; border: 0.5px solid #3a3a36; font-size: 12px; cursor: pointer; background: #1e1e1c; color: #999; font-family: inherit; transition: all 0.15s; }
+  .chip:hover { border-color: #666; color: #e0e0dc; }
+  .chip.active { background: #e0e0dc; color: #1a1a18; border-color: #e0e0dc; }
+  .show-filtered { font-size: 12px; color: #888; cursor: pointer; border: none; background: none; font-family: inherit; text-decoration: underline; padding: 2px 4px; }
+  .show-filtered:hover { color: #e0e0dc; }
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; color: #666; }
+  .empty .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.25; }
+  .empty p { font-size: 14px; }
+  .empty small { font-size: 12px; margin-top: 6px; color: #555; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 16px 20px; }
+  .card { background: #252523; border: 0.5px solid #3a3a36; border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.15s, transform 0.1s; }
+  .card:hover { border-color: #666; transform: translateY(-1px); }
+  .card.selected { border-color: #e0e0dc; border-width: 1.5px; }
+  .card.filtered { opacity: 0.4; border-style: dashed; }
+  .card.filtered .filter-tag { display: inline-block; }
+  .filter-tag { display: none; font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #4a1b0c; color: #f0997b; margin-left: 4px; vertical-align: middle; }
+  .thumb { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #1e1e1c; }
+  .thumb-placeholder { width: 100%; aspect-ratio: 1; background: #1e1e1c; display: flex; align-items: center; justify-content: center; color: #444; font-size: 28px; }
+  .card-info { padding: 8px 10px; }
+  .card-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e0e0dc; }
+  .card-size { font-size: 11px; color: #888; margin-top: 2px; }
+  .card-reason { font-size: 10px; color: #f0997b; margin-top: 1px; }
+  .path-panel { position: sticky; bottom: 0; background: #252523; border-top: 0.5px solid #3a3a36; padding: 12px 20px; display: none; z-index: 100; }
+  .path-panel.visible { display: flex; align-items: center; gap: 10px; }
+  .path-label { font-size: 12px; color: #888; flex-shrink: 0; }
+  .path-value { font-size: 12px; font-family: "Consolas", "Monaco", monospace; color: #e0e0dc; word-break: break-all; flex: 1; background: #1e1e1c; padding: 6px 10px; border-radius: 6px; border: 0.5px solid #3a3a36; }
+  .btn-copy { padding: 5px 12px; border: 0.5px solid #3a3a36; border-radius: 6px; font-size: 12px; cursor: pointer; background: #1e1e1c; font-family: inherit; flex-shrink: 0; color: #999; }
+  .btn-copy:hover { background: #2a2a26; color: #e0e0dc; }
+  .btn-copy.copied { background: #173404; color: #97c459; border-color: #3b6d11; }
+  .progress-bar { height: 3px; background: #3a3a36; border-radius: 2px; overflow: hidden; width: 160px; }
+  .progress-fill { height: 100%; background: #e0e0dc; border-radius: 2px; transition: width 0.2s; }
+  .sort-select { padding: 5px 10px; border: 0.5px solid #3a3a36; border-radius: 8px; font-size: 12px; font-family: inherit; background: #1e1e1c; color: #999; cursor: pointer; outline: none; }
+  #loadingOverlay { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(20,20,18,0.82); backdrop-filter: blur(2px); flex-direction: column; align-items: center; justify-content: center; gap: 20px; cursor: not-allowed; user-select: none; }
+  #loadingOverlay.active { display: flex; }
+  .overlay-box { background: #252523; border: 0.5px solid #3a3a36; border-radius: 14px; padding: 28px 36px; display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 260px; }
+  .overlay-label { font-size: 13px; color: #e0e0dc; font-weight: 500; }
+  .overlay-sub { font-size: 11px; color: #888; }
+  .overlay-bar { width: 200px; height: 4px; background: #3a3a36; border-radius: 4px; overflow: hidden; }
+  .overlay-fill { height: 100%; background: #e0e0dc; border-radius: 4px; transition: width 0.25s ease; width: 0%; }
 </style>
 </head>
 <body>
 
-<h1>运动记录解析工具</h1>
+<div class="toolbar">
+  <h1>&#x1F4C1; 本地图片浏览器</h1>
+  <span style="font-size:11px;color:#666;flex-shrink:0;">售后维护：黄国威</span>
+  <button class="btn-select" onclick="selectFolder()" id="selectBtn">选择文件夹</button>
+  <div class="search-wrap">
+    <span class="search-icon">&gt;</span>
+    <input type="text" id="searchInput" placeholder="搜索文件名..." oninput="applyFilters()">
+  </div>
+  <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+    <option value="name-asc">文件名 A-Z</option>
+    <option value="name-desc">文件名 Z-A</option>
+    <option value="size-desc">大小 大-小</option>
+    <option value="size-asc">大小 小-大</option>
+    <option value="type">按类型</option>
+  </select>
+  <span class="stats" id="stats"></span>
+</div>
 
-<div class="card">
-  <div class="row">
-    <div class="col">
-      <h2>选择文件</h2>
-      <label>detail.data（必选）</label>
-      <div class="upload-zone" id="zone-detail" onclick="document.getElementById('file-detail').click()">
-        <div class="upload-icon">📂</div>
-        <span class="hint" id="hint-detail">点击选择 detail.data 文件</span>
-      </div>
-      <input type="file" id="file-detail" onchange="onDetailFile(this)">
+<div class="filter-bar" id="filterBar" style="display:none;">
+  <span>格式：</span>
+  <button class="chip active" data-ext="all" onclick="filterExt(this)">全部</button>
+  <span class="sep"></span>
+  <div class="filter-summary" id="filterSummary"></div>
+</div>
 
-      <label>sport_record_save_detail.h（可选，暂不使用）</label>
-      <div class="upload-zone" id="zone-h" onclick="document.getElementById('file-h').click()">
-        <div class="upload-icon">📄</div>
-        <span class="hint" id="hint-h">点击选择 .h 头文件</span>
-      </div>
-      <input type="file" id="file-h" onchange="onHeaderFile(this)">
-    </div>
-
-    <div class="col">
-      <h2>输出目录</h2>
-      <p style="font-size:12px;color:#666;line-height:1.6;margin-bottom:10px">
-        解析后各 TAG 数据将按文件名自动分类存储。<br>
-        点击"解析并下载"，所有数据打包为 .zip 文件下载到本地。
-      </p>
-      <button class="primary" id="btn-parse" disabled onclick="doParse()">解析并下载 ZIP</button>
-      <div class="prog" id="prog"><div class="prog-bar" id="prog-bar"></div></div>
-      <div class="status" id="parse-status" style="margin-top:8px"></div>
-      <div class="log" id="parse-log" style="display:none"></div>
-    </div>
+<div id="mainContent">
+  <div class="empty">
+    <div class="icon">&#x1F5BC;</div>
+    <p>点击「选择文件夹」浏览目录中的图片</p>
+    <small>自动过滤：重复图片、动画图片(GIF/APNG/WebP动画)、大尺寸背景图</small>
   </div>
 </div>
 
-<!-- TAG 统计 + 图表 -->
-<div id="result-area" style="display:none">
-  <div class="card">
-    <h2>数据类型统计</h2>
-    <div class="metrics" id="metrics-wrap"></div>
-    <div class="divider"></div>
-    <h3>点击数据类型查看图表</h3>
-    <div class="tag-grid" id="tag-grid"></div>
-  </div>
+<div class="path-panel" id="pathPanel">
+  <span class="path-label">路径：</span>
+  <span class="path-value" id="pathValue"></span>
+  <button class="btn-copy" id="copyBtn" onclick="copyPath()">复制</button>
+</div>
 
-  <div class="card" id="card-chart" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <h2 id="chart-title">心率曲线</h2>
-      <div class="legend"><i></i>心率 (bpm)</div>
-    </div>
-    <div class="metrics" id="hr-metrics"></div>
-    <div class="chart-wrap">
-      <canvas id="hrChart" role="img" aria-label="运动心率曲线图，横轴为时间，纵轴为心率">心率曲线</canvas>
-    </div>
+<input type="file" id="folderInput" webkitdirectory multiple accept="image/*" style="display:none" onchange="handleFiles(this)">
+
+<div id="loadingOverlay">
+  <div class="overlay-box">
+    <div class="overlay-label" id="overlayLabel">正在扫描图片…</div>
+    <div class="overlay-bar"><div class="overlay-fill" id="overlayFill"></div></div>
+    <div class="overlay-sub" id="overlaySub">请稍候</div>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ─────────────── TLV 解析核心（JS 版，与 Python 逻辑一致） ───────────────
-const TAG_NAMES = {
-  1:'TIMESTAMP',2:'GPS_FULL',3:'GPS_DIFF',4:'EVENT',5:'RT_GROUP_1',6:'RT_GROUP_2',
-  7:'RT_ALTITUDE',8:'RT_HEARTRATE',9:'RT_SPO2',10:'LAB_KM',11:'LAB_GROUP',
-  12:'RT_PRESSURE',13:'TEMPERATURE',14:'ALTITUDE_OFFSET',15:'STRENGTH_GROUP',
-  16:'GOLF_GROUP',17:'RT_GROUP_GOLF',18:'RT_POWER',19:'PLAYGROUND_PARA',
-  20:'SWIM_TRIP',21:'DOWNHILL_CLIMB',22:'DIVE',23:'RTPC',24:'LAP_RUNNING_TRACK',
-  25:'LAP_SKYDIVING',26:'DOWN_SPEED',27:'RT_CADENCE',28:'DEPTH',29:'RUNNING_POWER',
-  30:'CLIMBING_GROUP',
-  0x001F:'BAROMETER_GROUP',0x011F:'DELAY_EVENT',0x021F:'RT_SURFING',
-  0x031F:'LAP_FISHING',0x041F:'AIR_PRESSURE',0x051F:'REST_TIME',
-  0x061F:'ASSESS_SCORE',0x071F:'RUN_POSTURE',0x081F:'GOLF_COURSE',
-  0x091F:'SEC_LEVEL_DATA',0x0A1F:'STRYD_DATA',0x0B1F:'EQUIVALENT_DATA',
-  0x0C1F:'ALT_SEG_OFFSET',0x0D1F:'HYROX_LAP',0x0E1F:'HYROX_REP',
-  0x0F1F:'HYROX_BLOCK_DATA',0x101F:'HYROX_BLOCK_ROUND',0x111F:'HYROX_BLOCK_EXERCISE',
-};
-const HYROX_TYPES = {0:'无',1:'跑步',2:'滑雪机',3:'推雪橇',4:'拉雪橇',5:'波比跳远',6:'划船机',7:'农夫行走',8:'沙袋弓步',9:'药球',10:'休息'};
-const EVENT_NAMES = {1:'START',2:'AUTO_PAUSE',3:'AUTO_RESUME',4:'PAUSE',5:'RESUME',6:'STOP'};
-const LAP_TYPES = {0:'手动分段',1:'自动分段',2:'分组',3:'分段(融合)',4:'训练分段'};
+const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','bmp','svg','avif','ico','tiff','tif','heic','heif','jfif','pjpeg','pjp']);
+const DUPLICATE = 'duplicate';
+const ANIMATED = 'animated';
+const LARGE_BG = 'large_bg';
 
-function r8(dv,o){return dv.getUint8(o)}
-function r16(dv,o){return dv.getUint16(o,true)}
-function r32(dv,o){return dv.getUint32(o,true)}
-function ri32(dv,o){return dv.getInt32(o,true)}
-function rf32(dv,o){return Math.round(dv.getFloat32(o,true)*100)/100}
+let allItems = [];
+let selectedCard = null;
+let currentExt = 'all';
+let showFiltered = false;
+let filterStats = { duplicate: 0, animated: 0, large_bg: 0 };
 
-function parsers(tag, bytes){
-  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const n = bytes.byteLength;
-  try {
-    switch(tag){
-      case 1: if(n<12) break; return {magic_hex:'0x'+r32(dv,0).toString(16).toUpperCase().padStart(8,'0'), time_ms: Number(dv.getBigUint64(4,true)), time_str: new Date(Number(dv.getBigUint64(4,true))).toISOString()};
-      case 4: if(n<4) break; return {relative_time_ms:r16(dv,0), index:r16(dv,2), event_name:EVENT_NAMES[r16(dv,2)]||'UNKNOWN'};
-      case 5: if(n<8) break; return {relative_time_ms:r16(dv,0), freq_step_per_min:r16(dv,2), stride_cm:r16(dv,4), pace_s_per_km:r16(dv,6)};
-      case 7: if(n<6) break; return {relative_time_ms:r16(dv,0), altitude_cm:ri32(dv,2), altitude_m:Math.round(ri32(dv,2)/100*100)/100};
-      case 8: if(n<3) break; return {relative_time_ms:r16(dv,0), hr_bpm:r8(dv,2)};
-      case 9: if(n<3) break; return {relative_time_ms:r16(dv,0), spo2_percent:r8(dv,2)};
-      case 12: if(n<3) break; return {relative_time_ms:r16(dv,0), stress:r8(dv,2)};
-      case 27: if(n<6) break; return {relative_time_ms:r16(dv,0), cadence_rpm:r32(dv,2)};
-      case 29: if(n<4) break; return {relative_time_ms:r16(dv,0), running_power_w:r16(dv,2)};
-      case 0x091F: if(n<6) break; return {relative_time_ms:r16(dv,0), total_distance_cm:r32(dv,2), total_distance_m:Math.round(r32(dv,2)/100*100)/100};
-      case 0x041F: if(n<6) break; return {relative_time_ms:r16(dv,0), air_pressure_mbar:r32(dv,2)};
-      case 0x051F: if(n<6) break; return {relative_time_ms:r16(dv,0), rest_time_ms:r32(dv,2)};
-      case 0x0D1F: if(n<20) break; return {
-        relative_time_ms:r16(dv,0), index:r16(dv,2),
-        type:LAP_TYPES[r8(dv,4)]||r8(dv,4), avg_hr:r8(dv,5),
-        hyrox_station_type:HYROX_TYPES[r16(dv,6)]||r16(dv,6),
-        cal:r16(dv,8), lap_time_ms:r32(dv,10),
-        muscular_load:rf32(dv,14), cardiac_load:rf32(dv,18),
-      };
-      default: return {raw_hex: Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('')};
-    }
-  } catch(e) {}
-  return {raw_hex: Array.from(bytes).map(b=>b.toString(16).padStart(2,'0')).join('')};
+function selectFolder() {
+  document.getElementById('folderInput').value = '';
+  document.getElementById('folderInput').click();
 }
 
-function parseDetailBinary(buffer, onProgress) {
-  const raw = new Uint8Array(buffer);
-  const total = raw.length;
-  const groups = {};
-  let pos = 0;
-  let count = 0;
-  const TICK = 10000;
+function setProgress(pct, label, sub) {
+  document.getElementById('overlayFill').style.width = pct + '%';
+  if (label) document.getElementById('overlayLabel').textContent = label;
+  if (sub !== undefined) document.getElementById('overlaySub').textContent = sub;
+}
 
-  while (pos < total - 1) {
-    const first = raw[pos];
-    let tag, hdrSize, length;
+async function handleFiles(input) {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('active');
+  setProgress(0, '正在扫描图片…', '请稍候');
+  // yield to browser so overlay renders before heavy work
+  await new Promise(r => setTimeout(r, 30));
 
-    if (first === 0x1F || (first > 30)) {
-      // 双字节 TAG
-      if (pos + 2 >= total) break;
-      const dv = new DataView(buffer, pos, 2);
-      tag = dv.getUint16(0, true);
-      length = raw[pos + 2];
-      hdrSize = 3;
+  const selectBtn = document.getElementById('selectBtn');
+  selectBtn.disabled = true;
+  showFiltered = false;
+  filterStats = { duplicate: 0, animated: 0, large_bg: 0 };
+
+  const allImageFiles = Array.from(input.files).filter(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    return IMAGE_EXTS.has(ext);
+  });
+
+  const total = allImageFiles.length;
+  setProgress(5, '正在扫描图片…', '共发现 ' + total + ' 张');
+  await new Promise(r => setTimeout(r, 10));
+
+  const items = allImageFiles.map(f => ({
+    file: f,
+    name: f.name,
+    ext: f.name.split('.').pop().toLowerCase(),
+    size: f.size,
+    path: f.webkitRelativePath || f.name,
+    url: null,
+    filter: null,
+    width: 0,
+    height: 0,
+    dupKey: f.name
+  }));
+
+  // Step 1: Deduplicate
+  const seen = new Map();
+  const deduped = [];
+  for (const item of items) {
+    if (seen.has(item.dupKey)) {
+      item.filter = DUPLICATE;
+      filterStats.duplicate++;
     } else {
-      tag = first;
-      length = raw[pos + 1];
-      hdrSize = 2;
+      seen.set(item.dupKey, item.dupKey);
     }
+    deduped.push(item);
+  }
+  setProgress(20, '检测动画图片…', '去重完成，剩余 ' + deduped.filter(i=>!i.filter).length + ' 张');
+  await new Promise(r => setTimeout(r, 10));
 
-    const dataStart = pos + hdrSize;
-    const dataEnd = dataStart + length;
-    if (dataEnd > total) break;
-
-    const bytes = raw.slice(dataStart, dataEnd);
-    const tagName = TAG_NAMES[tag] || ('UNKNOWN_0x' + tag.toString(16).toUpperCase().padStart(4,'0'));
-
-    if (!groups[tagName]) groups[tagName] = [];
-    groups[tagName].push({
-      offset: pos,
-      tag: tag,
-      tag_name: tagName,
-      length: length,
-      data: parsers(tag, bytes),
-    });
-
-    count++;
-    if (count % TICK === 0 && onProgress) {
-      onProgress(Math.min(99, Math.round(pos / total * 100)));
+  // Step 2: Check animation (GIF, APNG, WebP anim) - read file headers
+  const animExts = new Set(['gif', 'png', 'webp']);
+  const animTargets = deduped.filter(item => !item.filter && animExts.has(item.ext));
+  let animDone = 0;
+  const animChecks = animTargets.map(async item => {
+    const isAnim = await checkAnimated(item);
+    if (isAnim) { item.filter = ANIMATED; filterStats.animated++; }
+    animDone++;
+    if (animTargets.length > 0) {
+      setProgress(20 + Math.round(30 * animDone / animTargets.length), '检测动画图片…',
+        animDone + ' / ' + animTargets.length);
     }
-    pos = dataEnd;
+  });
+  await Promise.all(animChecks);
+  setProgress(50, '检测大尺寸背景图…', '动画检测完成');
+  await new Promise(r => setTimeout(r, 10));
+
+  // Step 3: Check large background - load image, check dimensions
+  const dimTargets = deduped.filter(item => !item.filter);
+  let dimDone = 0;
+  const dimChecks = dimTargets.map(async item => {
+    const isLarge = await checkLargeBg(item);
+    if (isLarge) { item.filter = LARGE_BG; filterStats.large_bg++; }
+    dimDone++;
+    if (dimTargets.length > 0) {
+      setProgress(50 + Math.round(40 * dimDone / dimTargets.length), '检测大尺寸背景图…',
+        dimDone + ' / ' + dimTargets.length);
+    }
+  });
+  await Promise.all(dimChecks);
+
+  allItems = deduped;
+  selectedCard = null;
+  document.getElementById('pathPanel').className = 'path-panel';
+
+  setProgress(95, '渲染图片列表…', '即将完成');
+  await new Promise(r => setTimeout(r, 30));
+
+  buildExtFilters();
+  applyFilters();
+
+  setProgress(100, '加载完成', '');
+  await new Promise(r => setTimeout(r, 350));
+  overlay.classList.remove('active');
+  selectBtn.disabled = false;
+}
+
+async function checkAnimated(item) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const bytes = new Uint8Array(reader.result);
+      if (item.ext === 'gif') {
+        resolve(isAnimatedGIF(bytes));
+      } else if (item.ext === 'png') {
+        resolve(isAPNG(bytes));
+      } else if (item.ext === 'webp') {
+        resolve(isAnimatedWebP(bytes));
+      } else {
+        resolve(false);
+      }
+    };
+    reader.onerror = () => resolve(false);
+    // Read enough bytes to detect animation headers
+    // GIF: need whole file to count image descriptors (usually small files)
+    // PNG: first 64KB should contain acTL if present
+    // WebP: first 64KB should contain ANIM if present
+    const size = item.ext === 'gif' ? item.file.size : Math.min(item.file.size, 65536);
+    reader.readAsArrayBuffer(item.file.slice(0, size));
+  });
+}
+
+function isAnimatedGIF(bytes) {
+  if (bytes.length < 13) return false;
+  let count = 0;
+  for (let i = 0; i < bytes.length - 1; i++) {
+    if (bytes[i] === 0x2C) {
+      // 0x2C is Image Descriptor - but could be part of comment/extension data
+      // Check context: preceding byte should be 0x00 (terminator) or 0x3B (trailer)
+      // or we're at a chunk boundary. Simple heuristic: skip if inside data.
+      // More accurate: look at surrounding context
+      // Image Descriptor structure: separator(1) + left(2) + top(2) + width(2) + height(2) + flags(1)
+      // width/height must be > 0, flags byte has local color table bit
+      if (i + 9 < bytes.length) {
+        const w = (bytes[i+5] << 8) | bytes[i+6];
+        const h = (bytes[i+7] << 8) | bytes[i+8];
+        if (w > 0 && h > 0 && w < 10000 && h < 10000) {
+          count++;
+        }
+      }
+    }
   }
-  return {total: count, groups};
+  return count > 1;
 }
 
-// ─────────────── ZIP 打包（纯 JS） ───────────────
-// 使用 fflate 库进行 ZIP 压缩
-function makeZip(files) {
-  // files: { filename: Uint8Array }
-  // 简单无压缩 ZIP（stored）
-  const parts = [];
-  const centralDir = [];
-  let offset = 0;
-
-  function strToBytes(s) {
-    return new TextEncoder().encode(s);
+function isAPNG(bytes) {
+  if (bytes.length < 8) return false;
+  // PNG signature: 137 80 78 71 13 10 26 10
+  if (bytes[0] !== 0x89 || bytes[1] !== 0x50 || bytes[2] !== 0x4E || bytes[3] !== 0x47) return false;
+  // Scan for acTL chunk
+  let offset = 8;
+  while (offset + 8 <= bytes.length) {
+    const chunkType = String.fromCharCode(bytes[offset+4], bytes[offset+5], bytes[offset+6], bytes[offset+7]);
+    if (chunkType === 'acTL') return true;
+    if (chunkType === 'IDAT') return false; // past animation metadata area
+    const length = (bytes[offset] << 24) | (bytes[offset+1] << 16) | (bytes[offset+2] << 8) | bytes[offset+3];
+    offset += 12 + length;
   }
-  function u16le(n) { return [(n&0xFF),((n>>8)&0xFF)]; }
-  function u32le(n) { return [(n&0xFF),((n>>8)&0xFF),((n>>16)&0xFF),((n>>24)&0xFF)]; }
+  return false;
+}
 
-  function crc32(data) {
-    let c = 0xFFFFFFFF;
-    const table = crc32.table || (crc32.table = (() => {
-      const t = new Uint32Array(256);
-      for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++) c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[i]=c;}
-      return t;
-    })());
-    for(let i=0;i<data.length;i++) c = table[(c^data[i])&0xFF]^(c>>>8);
-    return (c^0xFFFFFFFF)>>>0;
+function isAnimatedWebP(bytes) {
+  if (bytes.length < 12) return false;
+  // RIFF header: 'RIFF' + size + 'WEBP'
+  if (bytes[0] !== 0x52 || bytes[1] !== 0x49 || bytes[2] !== 0x46 || bytes[3] !== 0x46) return false;
+  if (bytes[8] !== 0x57 || bytes[9] !== 0x45 || bytes[10] !== 0x42 || bytes[11] !== 0x50) return false;
+  // Scan for ANIM chunk
+  let offset = 12;
+  while (offset + 8 <= bytes.length) {
+    const fourCC = String.fromCharCode(bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]);
+    if (fourCC === 'ANIM') return true;
+    const chunkSize = (bytes[offset+4]) | (bytes[offset+5] << 8) | (bytes[offset+6] << 16) | (bytes[offset+7] << 24);
+    offset += 8 + chunkSize;
+    if (offset % 2) offset++; // padding byte
+  }
+  return false;
+}
+
+async function checkLargeBg(item) {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(item.file);
+    const img = new Image();
+    img.onload = () => {
+      item.width = img.naturalWidth;
+      item.height = img.naturalHeight;
+      URL.revokeObjectURL(url);
+
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (w === 0 || h === 0) { resolve(false); return; }
+
+      // Heuristics for large background images:
+      // 1. Either dimension > 2400px (typical full-screen bg resolution)
+      // 2. Entremely wide aspect ratio (> 3.5:1, e.g. banner sliders)
+      // 3. SVG files: skip dimension check entirely
+      const ratio = w / h;
+      const isLarge = w > 2400 || h > 2400 || ratio > 3.5 || ratio < 0.28;
+      resolve(isLarge);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(false);
+    };
+    img.src = url;
+  });
+}
+
+function buildExtFilters() {
+  const bar = document.getElementById('filterBar');
+  bar.innerHTML = '';
+
+  const visibleExs = [...new Set(allItems.filter(i => !i.filter).map(f => f.ext))].sort();
+  const allExts = [...new Set(allItems.map(f => f.ext))].sort();
+
+  if (visibleExs.length === 0 && allExts.length === 0) { bar.style.display = 'none'; return; }
+
+  const label = document.createElement('span');
+  label.textContent = '格式：';
+  bar.appendChild(label);
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'chip ' + (currentExt === 'all' ? 'active' : '');
+  allBtn.dataset.ext = 'all'; allBtn.textContent = '全部';
+  allBtn.onclick = () => filterExt(allBtn);
+  bar.appendChild(allBtn);
+
+  visibleExs.forEach(ext => {
+    const btn = document.createElement('button');
+    btn.className = 'chip ' + (currentExt === ext ? 'active' : '');
+    btn.dataset.ext = ext;
+    btn.textContent = ext.toUpperCase();
+    btn.onclick = () => filterExt(btn);
+    bar.appendChild(btn);
+  });
+
+  if (filterStats.duplicate + filterStats.animated + filterStats.large_bg > 0) {
+    const sep = document.createElement('span');
+    sep.className = 'sep';
+    bar.appendChild(sep);
+
+    const summary = document.createElement('div');
+    summary.className = 'filter-summary';
+    summary.id = 'filterSummary';
+    let parts = [];
+    if (filterStats.duplicate > 0) parts.push('\u91CD\u590D ' + filterStats.duplicate);
+    if (filterStats.animated > 0) parts.push('\u52A8\u753B ' + filterStats.animated);
+    if (filterStats.large_bg > 0) parts.push('\u5927\u80CC\u666F\u56FE ' + filterStats.large_bg);
+    summary.textContent = '\u5DF2\u8FC7\u6EE4\uFF1A' + parts.join(' / ');
+    bar.appendChild(summary);
+
+    const showBtn = document.createElement('button');
+    showBtn.className = 'show-filtered';
+    showBtn.textContent = showFiltered ? '\u9690\u85CF\u5DF2\u8FC7\u6EE4' : '\u663E\u793A\u5DF2\u8FC7\u6EE4';
+    showBtn.id = 'toggleFilteredBtn';
+    showBtn.onclick = toggleFiltered;
+    bar.appendChild(showBtn);
   }
 
-  for (const [name, data] of Object.entries(files)) {
-    const nameBytes = strToBytes(name);
-    const crc = crc32(data);
-    const size = data.length;
-    const ts = new Date();
-    const dosDate = ((ts.getFullYear()-1980)<<9)|((ts.getMonth()+1)<<5)|ts.getDate();
-    const dosTime = (ts.getHours()<<11)|(ts.getMinutes()<<5)|(ts.getSeconds()>>1);
-
-    const localHeader = new Uint8Array([
-      0x50,0x4B,0x03,0x04, // sig
-      20,0,               // version needed
-      0,0,                // flags
-      0,0,                // compression (stored)
-      ...u16le(dosTime),...u16le(dosDate),
-      ...u32le(crc),
-      ...u32le(size),...u32le(size), // compressed = uncompressed
-      ...u16le(nameBytes.length),0,0, // name len, extra len
-      ...nameBytes,
-    ]);
-
-    centralDir.push({localHeader, nameBytes, crc, size, offset, dosDate, dosTime});
-    parts.push(localHeader);
-    parts.push(data);
-    offset += localHeader.length + size;
-  }
-
-  // Central directory
-  const cdParts = [];
-  let cdSize = 0;
-  const cdOffset = offset;
-  for (const {nameBytes, crc, size, offset: lhOffset, dosDate, dosTime} of centralDir) {
-    const cd = new Uint8Array([
-      0x50,0x4B,0x01,0x02,
-      20,0,20,0,0,0,0,0,
-      ...u16le(dosTime),...u16le(dosDate),
-      ...u32le(crc),
-      ...u32le(size),...u32le(size),
-      ...u16le(nameBytes.length),0,0,0,0,0,0,0,
-      ...u32le(0),
-      ...u32le(lhOffset),
-      ...nameBytes,
-    ]);
-    cdParts.push(cd);
-    cdSize += cd.length;
-  }
-
-  const eocd = new Uint8Array([
-    0x50,0x4B,0x05,0x06,0,0,0,0,
-    ...u16le(centralDir.length),...u16le(centralDir.length),
-    ...u32le(cdSize),...u32le(cdOffset),
-    0,0,
-  ]);
-
-  // concat all
-  const totalSize = parts.reduce((s,p)=>s+p.length,0) + cdSize + eocd.length;
-  const out = new Uint8Array(totalSize);
-  let pos = 0;
-  for (const p of [...parts,...cdParts,[eocd]]) {
-    out.set(p, pos); pos += p.length;
-  }
-  return out;
+  bar.style.display = 'flex';
 }
 
-// ─────────────── UI 逻辑 ───────────────
-let detailFile = null;
-let parsedGroups = null;
-let hrChart = null;
-
-function onDetailFile(input) {
-  detailFile = input.files[0];
-  if (!detailFile) return;
-  const zone = document.getElementById('zone-detail');
-  zone.classList.add('has-file');
-  zone.innerHTML = `<div class="fn">${detailFile.name}</div><div class="hint">${(detailFile.size/1024).toFixed(1)} KB</div>`;
-  document.getElementById('btn-parse').disabled = false;
-  setStatus('');
+function toggleFiltered() {
+  showFiltered = !showFiltered;
+  document.getElementById('toggleFilteredBtn').textContent = showFiltered ? '\u9690\u85CF\u5DF2\u8FC7\u6EE4' : '\u663E\u793A\u5DF2\u8FC7\u6EE4';
+  applyFilters();
 }
 
-function onHeaderFile(input) {
-  const f = input.files[0];
-  if (!f) return;
-  const zone = document.getElementById('zone-h');
-  zone.classList.add('has-file');
-  zone.innerHTML = `<div class="fn">${f.name}</div><div class="hint">${(f.size/1024).toFixed(1)} KB</div>`;
+function filterExt(btn) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentExt = btn.dataset.ext;
+  applyFilters();
 }
 
-function setStatus(msg, type) {
-  const el = document.getElementById('parse-status');
-  el.textContent = msg;
-  el.className = 'status' + (type ? ' '+type : '');
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let subset = showFiltered ? allItems : allItems.filter(i => !i.filter);
+  let filtered = subset.filter(f => {
+    const matchExt = currentExt === 'all' || f.ext === currentExt;
+    const matchSearch = !q || f.name.toLowerCase().includes(q);
+    return matchExt && matchSearch;
+  });
+
+  filtered.sort((a, b) => {
+    if (sort === 'name-asc') return a.name.localeCompare(b.name);
+    if (sort === 'name-desc') return b.name.localeCompare(a.name);
+    if (sort === 'size-desc') return b.size - a.size;
+    if (sort === 'size-asc') return a.size - b.size;
+    if (sort === 'type') return a.ext.localeCompare(b.ext) || a.name.localeCompare(b.name);
+    return 0;
+  });
+
+  const totalVisible = allItems.filter(i => !i.filter).length;
+  document.getElementById('stats').textContent =
+    allItems.length ? '\u663E\u793A ' + filtered.length + ' / ' + totalVisible + ' \u5F20' : '';
+  renderGrid(filtered);
 }
 
-function setProgress(pct) {
-  const prog = document.getElementById('prog');
-  const bar = document.getElementById('prog-bar');
-  prog.style.display = 'block';
-  bar.style.width = pct + '%';
-  if (pct >= 100) setTimeout(()=>{prog.style.display='none';},600);
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function log(msg) {
-  const el = document.getElementById('parse-log');
-  el.style.display = 'block';
-  el.textContent += msg + '\n';
-  el.scrollTop = el.scrollHeight;
-}
+const FILTER_LABELS = { duplicate: '\u91CD\u590D', animated: '\u52A8\u753B', large_bg: '\u5927\u80CC\u666F\u56FE' };
 
-async function doParse() {
-  if (!detailFile) return;
-  document.getElementById('btn-parse').disabled = true;
-  document.getElementById('parse-log').textContent = '';
-  document.getElementById('result-area').style.display = 'none';
-  setStatus('读取文件...'); setProgress(5);
-
-  const buffer = await detailFile.arrayBuffer();
-  setStatus('解析中...'); setProgress(10);
-  log('开始解析: ' + detailFile.name + ' (' + (detailFile.size/1024).toFixed(1) + ' KB)');
-
-  // 用 setTimeout 让 UI 先刷新
-  await new Promise(r=>setTimeout(r,0));
-
-  let result;
-  try {
-    result = parseDetailBinary(buffer, p=>{setProgress(10+p*0.7);});
-  } catch(e) {
-    setStatus('解析失败: '+e.message, 'err');
-    document.getElementById('btn-parse').disabled = false;
+function renderGrid(items) {
+  const main = document.getElementById('mainContent');
+  if (!items.length) {
+    main.innerHTML = allItems.length
+      ? '<div class="empty"><div class="icon">&#x1F50D;</div><p>没有匹配的图片</p></div>'
+      : '<div class="empty"><div class="icon">&#x1F5BC;</div><p>点击「选择文件夹」浏览目录中的图片</p><small>自动过滤：重复图片、动画图片、大尺寸背景图</small></div>';
     return;
   }
 
-  parsedGroups = result.groups;
-  log(`解析完成，共 ${result.total} 条记录，${Object.keys(result.groups).length} 种 TAG`);
-  setProgress(85);
-  setStatus('打包 ZIP...');
+  const grid = document.createElement('div');
+  grid.className = 'grid';
 
-  // 生成 ZIP
-  const ts = new Date().toISOString().replace(/[:.]/g,'-').substring(0,19);
-  const dirname = ts + '_' + detailFile.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  items.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    if (item.filter) card.classList.add('filtered');
+    card.dataset.path = item.path;
 
-  const zipFiles = {};
-  const summary = {
-    source_file: detailFile.name,
-    total_records: result.total,
-    tag_summary: {},
-    files: {},
-  };
+    const thumb = document.createElement('img');
+    thumb.className = 'thumb';
+    thumb.alt = item.name;
+    thumb.loading = 'lazy';
 
-  for (const [tagName, recs] of Object.entries(result.groups)) {
-    summary.tag_summary[tagName] = recs.length;
-    const fname = dirname + '/' + tagName + '.json';
-    zipFiles[fname] = new TextEncoder().encode(JSON.stringify(recs, null, 2));
-    summary.files[tagName] = tagName + '.json';
-  }
-  zipFiles[dirname + '/summary.json'] = new TextEncoder().encode(JSON.stringify(summary, null, 2));
-
-  setProgress(95);
-  const zipBytes = makeZip(zipFiles);
-  setProgress(100);
-
-  // 下载
-  const blob = new Blob([zipBytes], {type:'application/zip'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=dirname+'.zip'; a.click();
-  URL.revokeObjectURL(url);
-
-  log('ZIP 已下载: ' + dirname + '.zip');
-  setStatus(`解析完成！共 ${result.total} 条记录，ZIP 已下载`, 'ok');
-
-  renderResult(result);
-  document.getElementById('btn-parse').disabled = false;
-}
-
-function renderResult(result) {
-  const area = document.getElementById('result-area');
-  area.style.display = '';
-
-  // 统计指标
-  const tags = {};
-  for (const [k,v] of Object.entries(result.groups)) tags[k] = v.length;
-  const wrap = document.getElementById('metrics-wrap');
-  const items = [
-    {l:'总记录数', v: result.total},
-    {l:'数据类型', v: Object.keys(tags).length},
-    {l:'心率采样', v: tags['RT_HEARTRATE']||'-'},
-    {l:'秒级数据', v: tags['SEC_LEVEL_DATA']||'-'},
-    {l:'HYROX分段', v: tags['HYROX_LAP']||'-'},
-  ];
-  wrap.innerHTML = items.map(i=>`<div class="metric"><div class="ml">${i.l}</div><div class="mv">${i.v}</div></div>`).join('');
-
-  // TAG 卡片
-  const grid = document.getElementById('tag-grid');
-  grid.innerHTML = '';
-  const CHARTABLE = {RT_HEARTRATE:'心率曲线'};
-  Object.entries(tags).sort((a,b)=>b[1]-a[1]).forEach(([name,cnt])=>{
-    const el = document.createElement('div');
-    el.className = 'tag-card' + (CHARTABLE[name]?' clickable':'');
-    el.innerHTML = `<div class="tname">${name}${CHARTABLE[name]?' 📈':''}</div><div class="tcount">${cnt}</div>`;
-    if (CHARTABLE[name]) {
-      el.onclick = () => {
-        document.querySelectorAll('.tag-card').forEach(c=>c.classList.remove('selected'));
-        el.classList.add('selected');
-        showHRChart(result.groups[name]);
-      };
+    if (!item.url) {
+      item.url = URL.createObjectURL(item.file);
     }
-    grid.appendChild(el);
-  });
-}
+    thumb.src = item.url;
+    thumb.onerror = () => {
+      thumb.style.display = 'none';
+      const ph = document.createElement('div');
+      ph.className = 'thumb-placeholder';
+      ph.textContent = '?';
+      card.insertBefore(ph, card.firstChild);
+    };
 
-function fmtTime(s) {
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=Math.floor(s%60);
-  return h>0 ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}` : `${m}:${String(ss).padStart(2,'0')}`;
-}
-
-function showHRChart(records) {
-  const card = document.getElementById('card-chart');
-  card.style.display = '';
-
-  // 按原始记录顺序处理时间回绕（uint16 溢出，约每 65s 重置一次）
-  // 不预先排序，保留记录写入顺序，逐条检测时间倒退
-  const rawRecs = records.filter(r=>r.data&&r.data.hr_bpm!=null);
-
-  const pts = [];
-  let offset_ms = 0;
-  let prev_raw = -1;
-  // relative_time_ms 是 int16 存储，最大值约 32767ms（~32.7s）后重置为 0
-  // 检测时间倒退（当前值比上一条小 5s 以上），每次回绕加 32768ms
-  const WRAP_THRESHOLD = 5000; // 5s，正常心率采样不会跳退 5s
-  const WRAP_PERIOD = 32768;   // int16 溢出周期：32768ms
-  for (const rec of rawRecs) {
-    const t_raw = rec.data.relative_time_ms;
-    if (prev_raw >= 0 && t_raw < prev_raw - WRAP_THRESHOLD) {
-      offset_ms += WRAP_PERIOD;
+    let nameHtml = item.name;
+    if (item.filter) {
+      nameHtml += ' <span class="filter-tag" style="display:inline-block">' + FILTER_LABELS[item.filter] + '</span>';
     }
-    const abs_ms = t_raw + offset_ms;
-    pts.push({t: Math.round(abs_ms / 100) / 10, v: rec.data.hr_bpm}); // 转为秒
-    prev_raw = t_raw;
-  }
 
-  if (!pts.length) return;
+    const dimStr = (item.width && item.height)
+      ? (' / ' + item.width + '\xD7' + item.height)
+      : '';
 
-  const vals = pts.map(p=>p.v);
-  const max = Math.max(...vals), min = Math.min(...vals);
-  const avg = Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
-  const dur = pts[pts.length-1].t;
+    const info = document.createElement('div');
+    info.className = 'card-info';
+    info.innerHTML = '<div class="card-name" title="' + item.name + '">' + nameHtml + '</div>'
+      + '<div class="card-size">' + formatSize(item.size) + dimStr + '</div>';
 
-  document.getElementById('hr-metrics').innerHTML = [
-    {l:'最高心率',v:max+' bpm'},{l:'最低心率',v:min+' bpm'},
-    {l:'平均心率',v:avg+' bpm'},{l:'运动时长',v:fmtTime(dur)},{l:'采样数',v:pts.length},
-  ].map(i=>`<div class="metric"><div class="ml">${i.l}</div><div class="mv">${i.v}</div></div>`).join('');
-
-  if (hrChart) { hrChart.destroy(); hrChart=null; }
-  const ctx = document.getElementById('hrChart').getContext('2d');
-  hrChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: pts.map(p=>p.t),
-      datasets: [{
-        label: '心率 bpm',
-        data: pts.map(p=>p.v),
-        borderColor: '#E24B4A',
-        borderWidth: 1.5,
-        pointRadius: 0,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: '#E24B4A',
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2,
-        fill: true,
-        backgroundColor: 'rgba(226,75,74,0.07)',
-        tension: 0.3,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {mode:'index', intersect:false},
-      plugins: {
-        legend: {display:false},
-        tooltip: {
-          backgroundColor: '#1a1a1a',
-          titleColor: '#fff',
-          bodyColor: '#ddd',
-          padding: 10,
-          cornerRadius: 8,
-          callbacks: {
-            title: items => '运动时间：' + fmtTime(Math.round(items[0].parsed.x)),
-            label: item => `  心率：${item.parsed.y} bpm`,
-          },
-        },
-      },
-      scales: {
-        x: {
-          type:'linear', min:0,
-          title:{display:true, text:'运动时间', font:{size:11}, color:'#888'},
-          ticks:{maxTicksLimit:10, color:'#888', font:{size:11}, callback:v=>fmtTime(v)},
-          grid:{color:'rgba(0,0,0,0.05)'},
-          border:{color:'rgba(0,0,0,0.12)'},
-        },
-        y: {
-          min: Math.max(40, min-10), max: max+10,
-          title:{display:true, text:'心率 (bpm)', font:{size:11}, color:'#888'},
-          ticks:{color:'#888', font:{size:11}},
-          grid:{color:'rgba(0,0,0,0.05)'},
-          border:{color:'rgba(0,0,0,0.12)'},
-        },
-      },
-    },
+    card.appendChild(thumb);
+    card.appendChild(info);
+    card.onclick = () => selectImage(card, item);
+    grid.appendChild(card);
   });
-  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  main.innerHTML = '';
+  main.appendChild(grid);
+}
+
+function selectImage(card, item) {
+  if (selectedCard) selectedCard.classList.remove('selected');
+  if (selectedCard === card) {
+    selectedCard = null;
+    document.getElementById('pathPanel').className = 'path-panel';
+    return;
+  }
+  selectedCard = card;
+  card.classList.add('selected');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  document.getElementById('pathValue').textContent = item.path;
+  document.getElementById('pathPanel').className = 'path-panel visible';
+  document.getElementById('copyBtn').className = 'btn-copy';
+  document.getElementById('copyBtn').textContent = '\u590D\u5236';
+}
+
+function copyPath() {
+  const path = document.getElementById('pathValue').textContent;
+  navigator.clipboard.writeText(path).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '\u5DF2\u590D\u5236';
+    btn.className = 'btn-copy copied';
+    setTimeout(() => { btn.textContent = '\u590D\u5236'; btn.className = 'btn-copy'; }, 2000);
+  }).catch(() => {
+    const range = document.createRange();
+    range.selectNode(document.getElementById('pathValue'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+  });
 }
 </script>
 </body>
